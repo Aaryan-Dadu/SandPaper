@@ -10,7 +10,11 @@ def extract_data(html: str) -> dict:
         # Skip non-tags (like NavigableStrings or comments)
         if not hasattr(tag, 'name'):
             continue
-        if ((len(tag.contents) != 1)):
+        if ((len(tag.contents) != 1) or 
+            tag.name == 'script' or 
+            tag.name == 'style' or 
+            tag.name == 'header' or
+            tag.name == 'footer'):
             continue
         tag_name = tag.name
         class_name = "-".join(tag.get("class", [])) or "no-class"

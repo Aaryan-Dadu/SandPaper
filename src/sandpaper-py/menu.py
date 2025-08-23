@@ -79,7 +79,7 @@ def sandpaper():
 
     custom_list = []
 
-    if mode == "Multiple Pages":
+    if mode == "Multiple Web Pages":
         if url_format != "Custom List":
             intial_page = int(questionary.text("Initial Page Number:", default="1").ask())
             final_page = int(questionary.text("Final Page Number:", default="10").ask())
@@ -96,9 +96,9 @@ def sandpaper():
         print("\n[bold red]❌ Aborted by user[/bold red]")
         return
     else:
-        print("\n[bold green]✅ Starting the scraping process...[/bold green]")
+        print("\n[bold magenta]⏳ Starting the scraping process...[/bold magenta]\n")
 
-    scraper(
+    result = scraper(
         mode=mode,
         filename=filename,
         base_url=base_url,
@@ -109,7 +109,10 @@ def sandpaper():
         final_page=final_page,
         url_list=custom_list
     )
-
+    if result is True:
+        print(f"[bold green]✅ Data successfully saved to {filename}[/bold green]")
+    else:
+        print("[bold red]❌ An error occurred during scraping[/bold red]")
 
 if __name__ == "__main__":
     sandpaper()

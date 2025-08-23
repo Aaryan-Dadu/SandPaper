@@ -14,4 +14,4 @@ def export_groups(data_dict: dict, required_encoding, output_file):
     df = pd.DataFrame(normalized)
 
     df.to_csv(output_file, index=False, encoding=required_encoding)
-    print(f"Saved to {output_file}")
+    # print(f"Saved to {output_file}")
