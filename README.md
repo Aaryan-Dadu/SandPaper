@@ -176,7 +176,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Version History
 
-### v0.0.1 (Current)
+### v0.0.2 (Current)
 - Initial release
 - Single and multi-page scraping
 - Interactive CLI interface

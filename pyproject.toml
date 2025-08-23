@@ -7,7 +7,7 @@ version = "0.0.1"
 authors = [
   { name="Aaryan Dadu", email="aaryandadu5157@gmail.com" },
 ]
-description = "SandPaper is a CLI tool for scraping web pages with Playwright and exporting structured data to CSV."
+description = "SandPaper is a package for scraping web pages with Playwright and exporting structured data to CSV."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
