@@ -7,7 +7,7 @@ version = "0.0.1"
 authors = [
   { name="Aaryan Dadu", email="aaryandadu5157@gmail.com" },
 ]
-description = "SandPaper is a command-line tool for web scraping that extracts structured data from web pages and exports it to CSV. It provides an interactive CLI with options for single-page and multi-page scraping, including pagination support through path variables, query parameters, or custom URL lists. The tool uses Playwright for browser automation with features like automatic scrolling, custom headers, and encoding options, making it useful for collecting data from dynamic websites and turning it into organized datasets."
+description = "SandPaper is a CLI tool for scraping web pages with Playwright and exporting structured data to CSV."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -19,3 +19,6 @@ license-files = ["LICEN[CS]E*"]
 
 [project.urls]
 Homepage = "https://github.com/Aaryan-Dadu/SandPaper"
+
+[project.scripts]
+sandpaper = "sandpaper_py.menu:main"
