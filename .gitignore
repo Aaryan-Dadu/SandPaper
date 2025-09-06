@@ -10,3 +10,15 @@ dist/
 venv/
 ENV/
 *.csv
+*.xlsx
+*.parquet
+*.db
+*.meta.json
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+INTERNAL.md
