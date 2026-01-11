@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>SandPaper</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: ui-sans-serif, system-ui, sans-serif; max-width: 880px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { margin-bottom: 0.25rem; }
+  .hint { color: #6b7280; margin-top: 0; }
+  fieldset { border: 1px solid #d1d5db; border-radius: 6px; padding: 1rem 1.25rem; margin: 1rem 0; }
+  legend { font-weight: 600; padding: 0 0.5rem; }
+  label { display: block; margin: 0.5rem 0 0.25rem; font-size: 0.9rem; }
+  input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font: inherit; }
+  textarea { min-height: 90px; font-family: ui-monospace, monospace; }
+  .row { display: flex; gap: 1rem; }
+  .row > div { flex: 1; }
+  button { background: #2563eb; color: #fff; border: 0; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer; font: inherit; }
+  button:hover { background: #1d4ed8; }
+  button:disabled { background: #9ca3af; cursor: progress; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 4px; overflow: auto; max-height: 380px; }
+  .summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .pill { background: #e0e7ff; color: #1e40af; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.8rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+  th, td { border: 1px solid #d1d5db; padding: 0.4rem 0.5rem; text-align: left; }
+  th { background: #f3f4f6; }
+</style>
+</head>
+<body>
+<h1>SandPaper</h1>
+<p class="hint">Run a scrape from your browser. Server runs locally.</p>
+
+<form id="form">
+  <fieldset>
+    <legend>Target</legend>
+    <label>URL</label>
+    <input name="url" placeholder="https://example.com" />
+    <label>Page template (optional, use {page})</label>
+    <input name="page_template" placeholder="https://example.com/page/{page}" />
+    <label>Page range (e.g. 1-5,7)</label>
+    <input name="pages" placeholder="1-5" />
+    <label>URL list (one per line, overrides URL)</label>
+    <textarea name="url_list" placeholder="https://example.com/a\nhttps://example.com/b"></textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>Extraction</legend>
+    <div class="row">
+      <div>
+        <label>Extractor</label>
+        <select name="extractor">
+          <option value="heuristic">heuristic</option>
+          <option value="selector">selector</option>
+        </select>
+      </div>
+      <div>
+        <label>Threshold</label>
+        <input name="threshold" type="number" value="10" min="1" />
+      </div>
+    </div>
+    <label>Selectors (JSON object: column to CSS selector)</label>
+    <textarea name="selectors" placeholder='{"title": "h2.title", "price": ".price"}'></textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>Output</legend>
+    <div class="row">
+      <div>
+        <label>Format</label>
+        <select name="format">
+          <option value="csv">csv</option>
+          <option value="json">json</option>
+          <option value="jsonl">jsonl</option>
+          <option value="excel">excel</option>
+          <option value="parquet">parquet</option>
+          <option value="sqlite">sqlite</option>
+        </select>
+      </div>
+      <div>
+        <label>Output path (optional)</label>
+        <input name="output" placeholder="data/output.csv" />
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Behavior</legend>
+    <div class="row">
+      <div>
+        <label>Concurrency</label>
+        <input name="concurrency" type="number" value="1" min="1" />
+      </div>
+      <div>
+        <label>Retries</label>
+        <input name="retries" type="number" value="2" min="0" />
+      </div>
+      <div>
+        <label>Rate / sec (per host)</label>
+        <input name="rate_per_second" type="number" value="0" min="0" step="0.1" />
+      </div>
+    </div>
+    <div class="row">
+      <div><label><input type="checkbox" name="auto_paginate" /> Auto paginate</label></div>
+      <div><label><input type="checkbox" name="deduplicate" /> Deduplicate rows</label></div>
+      <div><label><input type="checkbox" name="headless" checked /> Headless</label></div>
+      <div><label><input type="checkbox" name="scroll" checked /> Scroll</label></div>
+    </div>
+  </fieldset>
+
+  <button id="run" type="submit">Run scrape</button>
+  <label style="margin-left: 1rem;"><input type="checkbox" name="stream" checked /> Live progress</label>
+</form>
+
+<div id="progress" style="margin-top: 1rem;"></div>
+
+<div id="output" style="margin-top: 1.5rem;"></div>
+
+<script>
+const form = document.getElementById('form');
+const output = document.getElementById('output');
+const progress = document.getElementById('progress');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('run');
+  btn.disabled = true;
+  output.innerHTML = '';
+  progress.innerHTML = '<p>Running...</p>';
+
+  const data = new FormData(form);
+  const body = {
+    url: data.get('url') || null,
+    page_template: data.get('page_template') || null,
+    pages: data.get('pages') || null,
+    url_list: (data.get('url_list') || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean),
+    extractor: data.get('extractor'),
+    threshold: parseInt(data.get('threshold') || '10', 10),
+    format: data.get('format'),
+    output: data.get('output') || null,
+    concurrency: parseInt(data.get('concurrency') || '1', 10),
+    retries: parseInt(data.get('retries') || '2', 10),
+    rate_per_second: parseFloat(data.get('rate_per_second') || '0'),
+    auto_paginate: data.get('auto_paginate') === 'on',
+    deduplicate: data.get('deduplicate') === 'on',
+    headless: data.get('headless') === 'on',
+    scroll: data.get('scroll') === 'on',
+    selectors: {}
+  };
+  const sel = (data.get('selectors') || '').trim();
+  if (sel) {
+    try { body.selectors = JSON.parse(sel); }
+    catch (err) { progress.innerHTML = '<p style="color:#dc2626">Selectors JSON invalid.</p>'; btn.disabled = false; return; }
+  }
+
+  const wantStream = data.get('stream') === 'on';
+
+  try {
+    if (wantStream) {
+      await runStream(body, btn);
+    } else {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail || res.statusText);
+      progress.innerHTML = '';
+      renderResult(json);
+    }
+  } catch (err) {
+    progress.innerHTML = `<p style="color:#dc2626">Error: ${err.message}</p>`;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+async function runStream(body, btn) {
+  const res = await fetch('/api/scrape/stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || res.statusText);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  let lastProgress = '';
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const messages = buf.split('\n\n');
+    buf = messages.pop();
+    for (const block of messages) {
+      const lines = block.split('\n').filter(l => l.startsWith('data: '));
+      if (!lines.length) continue;
+      try {
+        const ev = JSON.parse(lines.map(l => l.slice(6)).join(''));
+        if (ev.type === 'progress') {
+          lastProgress = `Loading ${ev.index}/${ev.total} <code>${escapeHtml(ev.url)}</code>`;
+          progress.innerHTML = `<p>${lastProgress}</p>`;
+        } else if (ev.type === 'done') {
+          progress.innerHTML = '';
+          renderResult(ev);
+        } else if (ev.type === 'error') {
+          progress.innerHTML = `<p style="color:#dc2626">Error: ${escapeHtml(ev.message)}</p>`;
+        }
+      } catch (err) {
+        // ignore malformed
+      }
+    }
+  }
+}
+
+function renderResult(r) {
+  const cols = r.preview.length ? Object.keys(r.preview[0]) : [];
+  const head = cols.map(c => `<th>${c}</th>`).join('');
+  const rows = r.preview.map(row => `<tr>${cols.map(c => `<td>${escapeHtml(row[c] || '')}</td>`).join('')}</tr>`).join('');
+  output.innerHTML = `
+    <div class="summary">
+      <span class="pill">rows: ${r.rows}</span>
+      <span class="pill">columns: ${r.columns.length}</span>
+      ${r.output_path ? `<span class="pill">saved: ${r.output_path}</span>` : ''}
+    </div>
+    <h3>Preview</h3>
+    <table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>
+    <h3>Provenance</h3>
+    <pre>${escapeHtml(JSON.stringify(r.provenance, null, 2))}</pre>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
