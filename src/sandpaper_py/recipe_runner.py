@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from .config import ScrapeConfig
 from .core import _post_process, _records_to_columns, _run_follows
@@ -189,6 +189,7 @@ class RecipeRunner:
         url = session.url
         if url not in self.visited:
             self.visited.append(url)
+        ex: Union[HeuristicExtractor, SelectorExtractor]
         if step.get("heuristic"):
             ex = HeuristicExtractor(threshold=int(step.get("threshold", 1)))
         else:

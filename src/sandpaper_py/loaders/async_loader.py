@@ -13,7 +13,7 @@ import asyncio
 import logging
 import random
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from ..exceptions import LoadError, RobotsDisallowed
 from ..robots import RobotsCache
@@ -37,9 +37,9 @@ class AsyncPlaywrightLoader:
         max_pages: int = 4,
     ):
         self.options = options or LoaderOptions()
-        self._pw = None
-        self._browser = None
-        self._context = None
+        self._pw: Any = None
+        self._browser: Any = None
+        self._context: Any = None
         self._sem = asyncio.Semaphore(max(1, max_pages))
         self._robots = RobotsCache(
             user_agent=self.options.user_agent,

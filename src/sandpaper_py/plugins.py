@@ -15,15 +15,15 @@ LOADER_GROUP = "sandpaper.loaders"
 
 def _load_group(group: str) -> dict[str, type]:
     try:
-        eps = entry_points(group=group)
+        eps = entry_points(group=group)  # type: ignore[call-arg]
     except TypeError:
-        eps = entry_points().get(group, [])
+        eps = entry_points().get(group, [])  # type: ignore[assignment]
     result: dict[str, type] = {}
     for ep in eps:
         try:
-            result[ep.name] = ep.load()
+            result[ep.name] = ep.load()  # type: ignore[attr-defined]
         except Exception as exc:
-            log.warning("failed to load plugin %s from group %s: %s", ep.name, group, exc)
+            log.warning("failed to load plugin %s from group %s: %s", ep.name, group, exc)  # type: ignore[attr-defined]
     return result
 
 

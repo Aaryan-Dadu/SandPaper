@@ -137,7 +137,7 @@ def _config_from_options(**kwargs) -> ScrapeConfig:
         wait_for_selector=kwargs.get("wait_for"),
         extra_wait_ms=kwargs.get("extra_wait") or 0,
         timeout_ms=kwargs.get("timeout") or 60000,
-        retries=kwargs.get("retries") if kwargs.get("retries") is not None else 2,
+        retries=int(kwargs.get("retries") or 2),
         rate_per_second=kwargs.get("rate") or 0.0,
         obey_robots=kwargs.get("obey_robots", False),
         allow_on_robots_error=kwargs.get("allow_on_robots_error", False),

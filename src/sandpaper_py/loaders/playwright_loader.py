@@ -6,7 +6,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from ..exceptions import LoadError, RobotsDisallowed
 from ..robots import RobotsCache
@@ -58,9 +58,9 @@ class PlaywrightLoader:
         shared_limiter: Optional[RateLimiter] = None,
     ):
         self.options = options or LoaderOptions()
-        self._pw = None
-        self._browser = None
-        self._context = None
+        self._pw: Any = None
+        self._browser: Any = None
+        self._context: Any = None
         self._engine_name: Optional[str] = None
         self._lock = threading.Lock()
         self._limiter = shared_limiter or RateLimiter(self.options.rate_per_second)

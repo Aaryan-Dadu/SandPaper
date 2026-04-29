@@ -22,10 +22,10 @@ log = logging.getLogger("sandpaper.session")
 class BrowserSession:
     def __init__(self, options: Optional[LoaderOptions] = None):
         self.options = options or LoaderOptions()
-        self._pw = None
-        self._browser = None
-        self._context = None
-        self._page = None
+        self._pw: Any = None
+        self._browser: Any = None
+        self._context: Any = None
+        self._page: Any = None
         self._cache = HTMLCache(self.options.cache_dir, self.options.cache_ttl_seconds)
         self._closed = False
 

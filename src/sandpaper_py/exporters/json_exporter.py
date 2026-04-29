@@ -31,11 +31,11 @@ def _records(
         seen: dict[str, int] = {}
         mapping: dict[str, str] = {}
         for col in df.columns:
-            base = slugify_key(col)
+            base = slugify_key(str(col))
             count = seen.get(base, 0) + 1
             seen[base] = count
-            mapping[col] = base if count == 1 else f"{base}_{count}"
-        rows = [{mapping[k]: v for k, v in row.items()} for row in rows]
+            mapping[str(col)] = base if count == 1 else f"{base}_{count}"
+        rows = [{mapping[str(k)]: v for k, v in row.items()} for row in rows]
     if null_policy == "null":
         rows = [
             {k: (None if isinstance(v, str) and not v else v) for k, v in row.items()}

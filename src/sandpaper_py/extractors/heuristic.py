@@ -180,7 +180,8 @@ class HeuristicExtractor:
         except Exception as exc:
             raise ExtractionError(f"failed to parse html: {exc}") from exc
 
-        body = soup.find("body") or soup
+        raw_body = soup.find("body") or soup
+        body = raw_body if isinstance(raw_body, Tag) else soup.new_tag("body")
         self._strip_noise(body)
 
         if self.prefer_records:

@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from .exceptions import ConfigError
 
@@ -22,12 +22,12 @@ def detect_next_link(html: str, base_url: str) -> Optional[str]:
     soup = BeautifulSoup(html, "lxml")
 
     link = soup.find("link", attrs={"rel": "next"})
-    if link and link.get("href"):
-        return urljoin(base_url, link["href"])
+    if isinstance(link, Tag) and link.get("href"):
+        return urljoin(base_url, str(link["href"]))
 
     a = soup.find("a", attrs={"rel": "next"})
-    if a and a.get("href"):
-        return urljoin(base_url, a["href"])
+    if isinstance(a, Tag) and a.get("href"):
+        return urljoin(base_url, str(a["href"]))
 
     text_patterns = re.compile(r"^(next|next\s+page|next\s*&raquo;|»|>)$", re.IGNORECASE)
     for anchor in soup.find_all("a", href=True):

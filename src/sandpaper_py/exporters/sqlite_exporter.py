@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+from typing import Literal
 
 from ..types import ExtractedTable
 from .base import normalize_to_dataframe, require_table, resolve_path
@@ -14,7 +15,7 @@ class SQLiteExporter:
     def __init__(
         self,
         table_name: str = "scrape",
-        if_exists: str = "replace",
+        if_exists: Literal["fail", "replace", "append"] = "replace",
         typed: bool = False,
         drop_empty_columns: bool = False,
         sort_columns: bool = False,

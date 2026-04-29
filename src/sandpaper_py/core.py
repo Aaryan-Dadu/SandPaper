@@ -182,7 +182,7 @@ def _scrape_auto(
     columns: dict[str, list[str]] = {}
     visited: list[str] = []
     seen: set[str] = set()
-    current = start_url
+    current: Optional[str] = start_url
     count = 0
     while current and count < cfg.max_auto_pages:
         if current in seen:
@@ -329,9 +329,9 @@ def _run_follows(
                 idx, row, url = futures[future]
                 completed += 1
                 try:
-                    detail = future.result()
-                    if detail:
-                        row.update({k: detail.get(k, "") for k in follow_keys})
+                    follow_detail: Optional[dict[str, str]] = future.result()
+                    if follow_detail:
+                        row.update({k: follow_detail.get(k, "") for k in follow_keys})
                     if on_progress:
                         on_progress(completed, total, url, "ok")
                 except SandpaperError as exc:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal, Optional
 
 from ..exceptions import ExportError
 from ..types import ExtractedTable
@@ -19,7 +20,7 @@ class ParquetExporter:
 
     def __init__(
         self,
-        compression: str = "snappy",
+        compression: Optional[Literal["snappy", "gzip", "brotli", "lz4", "zstd"]] = "snappy",
         typed: bool = False,
         drop_empty_columns: bool = False,
         sort_columns: bool = False,
