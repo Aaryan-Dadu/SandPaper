@@ -61,6 +61,9 @@ def get_site_name(url: str) -> str:
     if not host:
         return "site"
     chunks = host.split(".")
+    _SECOND_LEVEL = {"co", "com", "net", "org", "gov", "edu", "ac"}
+    if len(chunks) >= 3 and chunks[-2] in _SECOND_LEVEL:
+        return chunks[-3]
     if len(chunks) >= 2:
         return chunks[-2]
     return chunks[0] or "site"

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import pandas as pd
 
@@ -110,7 +110,7 @@ def coerce_dataframe(table: ExtractedTable) -> pd.DataFrame:
         padded = list(values) + [""] * (max_len - len(values))
         kind = infer_column_type(padded)
         if kind == "integer":
-            data[name] = pd.to_numeric(pd.Series(padded), errors="coerce").astype("Int64")
+            data[name] = cast(pd.Series, pd.to_numeric(pd.Series(padded), errors="coerce")).astype("Int64")
         elif kind in {"number", "currency"}:
             cleaned = [_strip_currency(v) for v in padded]
             data[name] = pd.to_numeric(pd.Series(cleaned), errors="coerce")
