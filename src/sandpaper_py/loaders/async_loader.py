@@ -13,7 +13,7 @@ import asyncio
 import logging
 import random
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ..exceptions import LoadError, RobotsDisallowed
 from ..robots import RobotsCache
@@ -33,7 +33,7 @@ class AsyncPlaywrightLoader:
 
     def __init__(
         self,
-        options: Optional[LoaderOptions] = None,
+        options: LoaderOptions | None = None,
         max_pages: int = 4,
     ):
         self.options = options or LoaderOptions()
@@ -65,14 +65,14 @@ class AsyncPlaywrightLoader:
             raise LoadError("", f"playwright not installed: {exc}") from exc
 
         self._pw = await async_playwright().start()
-        last_err: Optional[Exception] = None
+        last_err: Exception | None = None
         for engine in self.options.engines:
             engine_obj = getattr(self._pw, engine, None)
             if engine_obj is None:
                 continue
             try:
                 launch_kwargs: dict = {"headless": self.options.headless}
-                proxy_url: Optional[str] = None
+                proxy_url: str | None = None
                 if self.options.proxies:
                     proxy_url = random.choice(self.options.proxies)
                 elif self.options.proxy:
@@ -149,7 +149,7 @@ class AsyncPlaywrightLoader:
         await self._ensure_browser()
         assert self._context is not None
         attempts = 0
-        last_err: Optional[Exception] = None
+        last_err: Exception | None = None
 
         async with self._sem:
             for attempt in range(1, self.options.retries + 2):

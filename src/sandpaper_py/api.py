@@ -1,6 +1,5 @@
 from dataclasses import asdict
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from .config import ScrapeConfig
 from .core import scrape
@@ -16,19 +15,19 @@ try:
     _FASTAPI_AVAILABLE = True
 
     class ScrapeRequest(BaseModel):
-        url: Optional[str] = None
-        url_list: List[str] = []
-        page_template: Optional[str] = None
-        pages: Optional[str] = None
-        output: Optional[str] = None
+        url: str | None = None
+        url_list: list[str] = []
+        page_template: str | None = None
+        pages: str | None = None
+        output: str | None = None
         format: str = "csv"
         encoding: str = "utf-8"
         threshold: int = 10
         extractor: str = "heuristic"
-        selectors: Dict[str, str] = {}
-        row_selector: Optional[str] = None
-        follow_field: Optional[str] = None
-        follow_selectors: Dict[str, str] = {}
+        selectors: dict[str, str] = {}
+        row_selector: str | None = None
+        follow_field: str | None = None
+        follow_selectors: dict[str, str] = {}
         follow_concurrency: int = 4
         headless: bool = True
         scroll: bool = True
@@ -95,9 +94,9 @@ def create_app():
     @app.post("/api/scrape/stream")
     async def api_scrape_stream(payload: ScrapeRequest):
         cfg = ScrapeConfig(**payload.model_dump())
-        events: queue.Queue[Optional[dict]] = queue.Queue()
+        events: queue.Queue[dict | None] = queue.Queue()
 
-        def progress_cb(index: int, total: int, url: str, status: Optional[str]) -> None:
+        def progress_cb(index: int, total: int, url: str, status: str | None) -> None:
             events.put(
                 {
                     "type": "progress",
@@ -110,7 +109,7 @@ def create_app():
 
         async def drain():
             yield _sse({"type": "start"})
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             future = loop.run_in_executor(None, lambda: scrape(cfg, on_progress=progress_cb))
             while True:
                 if future.done():
@@ -122,7 +121,7 @@ def create_app():
                         loop.run_in_executor(None, events.get, True, 0.5),
                         timeout=0.6,
                     )
-                except (asyncio.TimeoutError, queue.Empty):
+                except (TimeoutError, queue.Empty):
                     yield _sse({"type": "heartbeat"})
                     continue
                 if item is None:
@@ -155,7 +154,7 @@ def create_app():
     return app
 
 
-def _preview(columns: Dict[str, List[str]], limit: int = 5) -> List[Dict[str, str]]:
+def _preview(columns: dict[str, list[str]], limit: int = 5) -> list[dict[str, str]]:
     if not columns:
         return []
     keys = list(columns.keys())

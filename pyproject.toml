@@ -10,15 +10,14 @@ authors = [
 ]
 description = "Scrape web pages with Playwright and export structured data."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Operating System :: OS Independent",
   "Environment :: Console",
   "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
@@ -32,7 +31,6 @@ dependencies = [
   "rich>=13.0",
   "questionary>=2.0",
   "click>=8.1",
-  "tomli>=2.0; python_version < '3.11'",
   "tomli-w>=1.0",
   "platformdirs>=3.0",
   "httpx>=0.25",
@@ -91,7 +89,7 @@ include = ["src/sandpaper_py", "README.md", "LICENSE", "tests"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -106,10 +104,6 @@ select = [
 ]
 ignore = [
   "E501",
-  "UP006",  # Use `dict[...]` over `Dict[...]` (we support py39 typing module)
-  "UP007",  # Use `X | Y` (py39 needs Optional/Union from typing)
-  "UP035",  # `typing.X` is deprecated -> deprecated only on 3.9+
-  "UP045",  # X | None requires py3.10+ runtime; keep Optional[X] for clarity
   "RET504", # tolerate unnecessary cfg-then-return when it aids readability
   "SIM105", # contextlib.suppress style is a wash; explicit try/except is fine
   "SIM108", # ternary is not always clearer
@@ -120,7 +114,7 @@ ignore = [
 "tests/*" = ["B011"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.11"
 strict = false
 warn_unused_ignores = true
 warn_redundant_casts = true

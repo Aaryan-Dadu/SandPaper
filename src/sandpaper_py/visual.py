@@ -15,7 +15,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .utils import slugify_key
 
@@ -24,7 +24,7 @@ log = logging.getLogger("sandpaper.visual")
 
 @dataclass
 class PickResult:
-    row_selector: Optional[str] = None
+    row_selector: str | None = None
     selectors: dict[str, str] = field(default_factory=dict)
     samples: dict[str, list[str]] = field(default_factory=dict)
     row_count: int = 0
@@ -413,7 +413,7 @@ def pick_pattern(
 
 
 def pick_selectors(
-    url: str, save_to: Optional[Path] = None, timeout_seconds: int = 600
+    url: str, save_to: Path | None = None, timeout_seconds: int = 600
 ) -> dict[str, str]:
     """Backward-compatible flat-map output. Internally calls pick_pattern."""
     result = pick_pattern(url, timeout_seconds=timeout_seconds)
@@ -564,7 +564,7 @@ RECORDER_JS = r"""
 def record_session(
     url: str,
     save_to: Path,
-    name: Optional[str] = None,
+    name: str | None = None,
     timeout_seconds: int = 3600,
 ) -> Path:
     """Open a headful browser, record interactions, run the picker on demand, save a recipe."""

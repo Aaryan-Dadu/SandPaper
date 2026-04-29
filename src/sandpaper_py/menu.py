@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import questionary
 from rich import print as rprint
@@ -48,7 +48,7 @@ def _ask_select(message: str, choices: list, default=None, show_back: bool = Tru
 def _ask_text(
     message: str,
     default: str = "",
-    validate: Optional[Callable[[str], object]] = None,
+    validate: Callable[[str], object] | None = None,
     show_back: bool = True,
 ) -> str:
     def wrapped(value: str):
@@ -299,7 +299,7 @@ def _step_confirm(cfg: ScrapeConfig) -> None:
         raise _Abort
 
 
-def run_interactive(initial: Optional[ScrapeConfig] = None) -> Optional[ScrapeConfig]:
+def run_interactive(initial: ScrapeConfig | None = None) -> ScrapeConfig | None:
     rprint(BANNER)
     rprint("[bold green]Welcome to SandPaper[/bold green]\n")
 

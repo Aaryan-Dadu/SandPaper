@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import random
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ..exceptions import LoadError
 from ..utils import HTMLCache, random_user_agent
@@ -20,7 +20,7 @@ log = logging.getLogger("sandpaper.session")
 
 
 class BrowserSession:
-    def __init__(self, options: Optional[LoaderOptions] = None):
+    def __init__(self, options: LoaderOptions | None = None):
         self.options = options or LoaderOptions()
         self._pw: Any = None
         self._browser: Any = None
@@ -45,14 +45,14 @@ class BrowserSession:
             raise LoadError("", f"playwright not installed: {exc}") from exc
 
         self._pw = sync_playwright().start()
-        last_err: Optional[Exception] = None
+        last_err: Exception | None = None
         for engine in self.options.engines:
             engine_obj = getattr(self._pw, engine, None)
             if engine_obj is None:
                 continue
             try:
                 launch_kwargs: dict = {"headless": self.options.headless}
-                proxy_url: Optional[str] = None
+                proxy_url: str | None = None
                 if self.options.proxies:
                     proxy_url = random.choice(self.options.proxies)
                 elif self.options.proxy:
@@ -133,7 +133,7 @@ class BrowserSession:
         self.page.goto(url, timeout=self.options.timeout_ms)
         self.page.wait_for_load_state("networkidle", timeout=self.options.timeout_ms)
 
-    def wait_for_selector(self, selector: str, timeout_ms: Optional[int] = None) -> None:
+    def wait_for_selector(self, selector: str, timeout_ms: int | None = None) -> None:
         self.page.wait_for_selector(selector, timeout=timeout_ms or self.options.timeout_ms)
 
     def wait_for_load_state(self, state: str = "networkidle") -> None:
@@ -151,9 +151,7 @@ class BrowserSession:
     def press(self, selector: str, key: str) -> None:
         self.page.press(selector, key, timeout=self.options.timeout_ms)
 
-    def scroll_to_bottom(
-        self, max_scrolls: Optional[int] = None, pause_ms: Optional[int] = None
-    ) -> None:
+    def scroll_to_bottom(self, max_scrolls: int | None = None, pause_ms: int | None = None) -> None:
         max_scrolls = max_scrolls if max_scrolls is not None else self.options.max_scrolls
         pause_ms = pause_ms if pause_ms is not None else int(self.options.scroll_pause * 1000)
         previous = 0

@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Any, Optional, Union
+from datetime import UTC, datetime
+from typing import Any
 
 from .config import ScrapeConfig
 from .core import _post_process, _records_to_columns, _run_follows
@@ -37,7 +37,7 @@ class RecipeRunner:
     exporter and provenance pipeline as `core.scrape()`.
     """
 
-    def __init__(self, recipe: Recipe, cfg: ScrapeConfig, params: Optional[dict[str, Any]] = None):
+    def __init__(self, recipe: Recipe, cfg: ScrapeConfig, params: dict[str, Any] | None = None):
         self.recipe = recipe
         self.cfg = cfg
         self.params = resolve_params(recipe.params, params or {})
@@ -48,7 +48,7 @@ class RecipeRunner:
     # ----------------------------------------------------------- main
 
     def run(self, on_progress=None) -> ScrapeResult:
-        started = datetime.now(timezone.utc).isoformat()
+        started = datetime.now(UTC).isoformat()
         loader_options = self._loader_options()
         with BrowserSession(loader_options) as session:
             for index, raw_step in enumerate(self.recipe.steps, start=1):
@@ -62,7 +62,7 @@ class RecipeRunner:
                 handler(session, step)
                 if on_progress:
                     on_progress(index, len(self.recipe.steps), action, "ok")
-        finished = datetime.now(timezone.utc).isoformat()
+        finished = datetime.now(UTC).isoformat()
 
         columns = _records_to_columns(self.keys, self.rows)
         columns = _post_process(columns, self.cfg)
@@ -87,7 +87,7 @@ class RecipeRunner:
             },
         )
 
-        output_path: Optional[str] = None
+        output_path: str | None = None
         if self.cfg.output and table.row_count() > 0:
             from .core import _exporter_kwargs
 
@@ -189,7 +189,7 @@ class RecipeRunner:
         url = session.url
         if url not in self.visited:
             self.visited.append(url)
-        ex: Union[HeuristicExtractor, SelectorExtractor]
+        ex: HeuristicExtractor | SelectorExtractor
         if step.get("heuristic"):
             ex = HeuristicExtractor(threshold=int(step.get("threshold", 1)))
         else:

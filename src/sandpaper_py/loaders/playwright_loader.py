@@ -6,7 +6,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ..exceptions import LoadError, RobotsDisallowed
 from ..robots import RobotsCache
@@ -29,14 +29,14 @@ class LoaderOptions:
     scroll: bool = True
     scroll_pause: float = 1.0
     max_scrolls: int = 30
-    wait_for_selector: Optional[str] = None
+    wait_for_selector: str | None = None
     extra_wait_ms: int = 0
     user_agent: str = DEFAULT_USER_AGENT
     rotate_user_agents: bool = False
     headers: dict[str, str] = field(default_factory=dict)
     cookies: list[dict] = field(default_factory=list)
-    storage_state: Optional[str] = None
-    proxy: Optional[str] = None
+    storage_state: str | None = None
+    proxy: str | None = None
     proxies: tuple[str, ...] = ()
     retries: int = 2
     retry_backoff: float = 1.5
@@ -44,7 +44,7 @@ class LoaderOptions:
     random_delay_ms: int = 0
     obey_robots: bool = False
     allow_on_robots_error: bool = False
-    cache_dir: Optional[str] = None
+    cache_dir: str | None = None
     cache_ttl_seconds: int = 0
     block_resources: tuple[str, ...] = ()
     dismiss_overlays: bool = False
@@ -54,14 +54,14 @@ class LoaderOptions:
 class PlaywrightLoader:
     def __init__(
         self,
-        options: Optional[LoaderOptions] = None,
-        shared_limiter: Optional[RateLimiter] = None,
+        options: LoaderOptions | None = None,
+        shared_limiter: RateLimiter | None = None,
     ):
         self.options = options or LoaderOptions()
         self._pw: Any = None
         self._browser: Any = None
         self._context: Any = None
-        self._engine_name: Optional[str] = None
+        self._engine_name: str | None = None
         self._lock = threading.Lock()
         self._limiter = shared_limiter or RateLimiter(self.options.rate_per_second)
         self._robots = RobotsCache(
@@ -80,14 +80,14 @@ class PlaywrightLoader:
             raise LoadError("", f"playwright not installed: {exc}") from exc
 
         self._pw = sync_playwright().start()
-        last_err: Optional[Exception] = None
+        last_err: Exception | None = None
         for engine in self.options.engines:
             engine_obj = getattr(self._pw, engine, None)
             if engine_obj is None:
                 continue
             try:
                 launch_kwargs: dict = {"headless": self.options.headless}
-                proxy_url: Optional[str] = None
+                proxy_url: str | None = None
                 if self.options.proxies:
                     proxy_url = random.choice(self.options.proxies)
                 elif self.options.proxy:
@@ -171,7 +171,7 @@ class PlaywrightLoader:
             self._ensure_browser()
             assert self._context is not None
             attempts = 0
-            last_err: Optional[Exception] = None
+            last_err: Exception | None = None
             for attempt in range(1, self.options.retries + 2):
                 attempts = attempt
                 page = None

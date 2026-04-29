@@ -39,7 +39,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .exceptions import ConfigError
 
@@ -71,7 +71,7 @@ class RecipeParam:
     type: str = "string"
     default: Any = None
     required: bool = False
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @dataclass
@@ -79,10 +79,10 @@ class Recipe:
     name: str
     steps: list[dict]
     version: int = RECIPE_VERSION
-    description: Optional[str] = None
+    description: str | None = None
     params: dict[str, RecipeParam] = field(default_factory=dict)
-    output: Optional[dict] = None  # optional default output settings (path, format)
-    source_path: Optional[Path] = None
+    output: dict | None = None  # optional default output settings (path, format)
+    source_path: Path | None = None
 
 
 def load_recipe(path: str | Path) -> Recipe:

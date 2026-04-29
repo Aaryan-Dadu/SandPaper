@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 
 from bs4 import BeautifulSoup, NavigableString, Tag
 
@@ -93,7 +93,7 @@ def _signature(tag: Tag) -> tuple[str, tuple[str, ...]]:
     return tag.name, _classes(tag)
 
 
-def _best_class_name(tag: Tag) -> Optional[str]:
+def _best_class_name(tag: Tag) -> str | None:
     classes = _classes(tag)
     if not classes:
         return None
@@ -139,7 +139,7 @@ class HeuristicExtractor:
         parser: str = "lxml",
         min_text_length: int = 1,
         max_text_length: int = 4000,
-        skip_class_keywords: Optional[Iterable[str]] = None,
+        skip_class_keywords: Iterable[str] | None = None,
         near_dup_ratio: float = 0.85,
         prefer_records: bool = True,
         max_fields_per_record: int = 30,
@@ -172,7 +172,7 @@ class HeuristicExtractor:
             else None
         )
 
-    def extract(self, html: str, source_url: Optional[str] = None) -> ExtractedTable:
+    def extract(self, html: str, source_url: str | None = None) -> ExtractedTable:
         if not html:
             return ExtractedTable(columns={}, source_url=source_url)
         try:
@@ -232,8 +232,8 @@ class HeuristicExtractor:
 
     # --- table extraction --------------------------------------------------
 
-    def _extract_html_tables(self, body: Tag) -> Optional[dict[str, list[str]]]:
-        best: Optional[Tag] = None
+    def _extract_html_tables(self, body: Tag) -> dict[str, list[str]] | None:
+        best: Tag | None = None
         best_rows = 0
         for table in body.find_all("table"):
             rows = table.find_all("tr")
@@ -290,9 +290,9 @@ class HeuristicExtractor:
             + class_signal
         )
 
-    def _find_best_record_set(self, body: Tag) -> Optional[tuple[Tag, list[Tag]]]:
+    def _find_best_record_set(self, body: Tag) -> tuple[Tag, list[Tag]] | None:
         best_score = -1.0
-        best: Optional[tuple[Tag, list[Tag]]] = None
+        best: tuple[Tag, list[Tag]] | None = None
         candidates = [body, *body.find_all(True)]
         for parent in candidates:
             if parent.name in SKIP_TAGS:
@@ -335,7 +335,7 @@ class HeuristicExtractor:
                 break
         return fields
 
-    def _extract_record_set(self, body: Tag) -> Optional[dict[str, list[str]]]:
+    def _extract_record_set(self, body: Tag) -> dict[str, list[str]] | None:
         best = self._find_best_record_set(body)
         if best is None:
             return None

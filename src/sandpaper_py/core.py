@@ -4,8 +4,7 @@ import logging
 import threading
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from urllib.parse import urljoin
 
 from .config import ScrapeConfig
@@ -26,7 +25,7 @@ log = logging.getLogger("sandpaper.core")
 
 def _build_loader(
     cfg: ScrapeConfig,
-    shared_limiter: Optional[RateLimiter] = None,
+    shared_limiter: RateLimiter | None = None,
 ) -> PlaywrightLoader:
     options = LoaderOptions(
         headless=cfg.headless,
@@ -141,7 +140,7 @@ def _scrape_concurrent(
                 loaders.append(loader)
         return loader
 
-    def worker(url: str) -> Optional[ExtractedTable]:
+    def worker(url: str) -> ExtractedTable | None:
         loader = get_loader()
         result = loader.load(url)
         return extractor.extract(result.html, source_url=url)
@@ -182,7 +181,7 @@ def _scrape_auto(
     columns: dict[str, list[str]] = {}
     visited: list[str] = []
     seen: set[str] = set()
-    current: Optional[str] = start_url
+    current: str | None = start_url
     count = 0
     while current and count < cfg.max_auto_pages:
         if current in seen:
@@ -211,7 +210,7 @@ def _scrape_auto(
     return columns, visited
 
 
-def _resolve_follow_url(value: str, base: Optional[str], prefix: Optional[str]) -> Optional[str]:
+def _resolve_follow_url(value: str, base: str | None, prefix: str | None) -> str | None:
     candidate = (value or "").strip()
     if not candidate:
         return None
@@ -312,7 +311,7 @@ def _run_follows(
                 loaders.append(loader)
         return loader
 
-    def worker(row: dict[str, str], target: str) -> Optional[dict[str, str]]:
+    def worker(row: dict[str, str], target: str) -> dict[str, str] | None:
         return detail_for(get_loader(), target)
 
     targets: list[tuple[int, dict[str, str], str]] = []
@@ -329,7 +328,7 @@ def _run_follows(
                 idx, row, url = futures[future]
                 completed += 1
                 try:
-                    follow_detail: Optional[dict[str, str]] = future.result()
+                    follow_detail: dict[str, str] | None = future.result()
                     if follow_detail:
                         row.update({k: follow_detail.get(k, "") for k in follow_keys})
                     if on_progress:
@@ -541,7 +540,7 @@ def _deduplicate(columns: dict[str, list[str]]) -> dict[str, list[str]]:
         rows.append(row)
     out: dict[str, list[str]] = {k: [] for k in keys}
     for row in rows:
-        for k, v in zip(keys, row):
+        for k, v in zip(keys, row, strict=False):
             out[k].append(v)
     return out
 
@@ -550,7 +549,7 @@ def scrape(cfg: ScrapeConfig, on_progress=None) -> ScrapeResult:
     cfg = _apply_preset(cfg)
 
     extractor = _build_extractor(cfg)
-    started = datetime.now(timezone.utc).isoformat()
+    started = datetime.now(UTC).isoformat()
 
     if cfg.auto_paginate and cfg.url:
         loader = _build_loader(cfg)
@@ -582,7 +581,7 @@ def scrape(cfg: ScrapeConfig, on_progress=None) -> ScrapeResult:
         columns = _deduplicate(columns)
 
     table = ExtractedTable(columns=columns, source_url=cfg.url)
-    finished = datetime.now(timezone.utc).isoformat()
+    finished = datetime.now(UTC).isoformat()
 
     provenance = Provenance(
         source_urls=visited,
@@ -613,7 +612,7 @@ def scrape(cfg: ScrapeConfig, on_progress=None) -> ScrapeResult:
         },
     )
 
-    output_path: Optional[str] = None
+    output_path: str | None = None
     if cfg.output:
         if table.row_count() == 0:
             log.warning(
@@ -659,11 +658,11 @@ def _exporter_kwargs(cfg: ScrapeConfig) -> dict:
     return {}
 
 
-def scrape_urls(urls: Iterable[str], output: Optional[str] = None, **overrides) -> ScrapeResult:
+def scrape_urls(urls: Iterable[str], output: str | None = None, **overrides) -> ScrapeResult:
     cfg = ScrapeConfig(url_list=list(urls), output=output, **overrides)
     return scrape(cfg)
 
 
-def scrape_url(url: str, output: Optional[str] = None, **overrides) -> ScrapeResult:
+def scrape_url(url: str, output: str | None = None, **overrides) -> ScrapeResult:
     cfg = ScrapeConfig(url=url, output=output, **overrides)
     return scrape(cfg)

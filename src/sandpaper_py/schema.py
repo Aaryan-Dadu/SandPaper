@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional, cast
+from typing import Any
 
 import pandas as pd
 
@@ -40,7 +40,7 @@ class TableStats:
     columns: list[ColumnStats]
 
 
-def _try_parse_date(value: str) -> Optional[datetime]:
+def _try_parse_date(value: str) -> datetime | None:
     for fmt in _DATE_FORMATS:
         try:
             return datetime.strptime(value, fmt)
@@ -110,7 +110,7 @@ def coerce_dataframe(table: ExtractedTable) -> pd.DataFrame:
         padded = list(values) + [""] * (max_len - len(values))
         kind = infer_column_type(padded)
         if kind == "integer":
-            data[name] = cast(pd.Series, pd.to_numeric(pd.Series(padded), errors="coerce")).astype("Int64")
+            data[name] = pd.to_numeric(pd.Series(padded), errors="coerce").astype("Int64")
         elif kind in {"number", "currency"}:
             cleaned = [_strip_currency(v) for v in padded]
             data[name] = pd.to_numeric(pd.Series(cleaned), errors="coerce")
@@ -130,7 +130,7 @@ def _strip_currency(value: str) -> str:
     return value.replace(",", "")
 
 
-def _to_bool(value: str) -> Optional[bool]:
+def _to_bool(value: str) -> bool | None:
     s = value.strip().lower()
     if s in {"true", "yes"}:
         return True

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
+from typing import Literal
 
 from ..types import ExtractedTable
 from .base import (
@@ -21,7 +22,7 @@ class CSVExporter:
     def __init__(
         self,
         encoding: str = "utf-8",
-        quoting: int = csv.QUOTE_MINIMAL,
+        quoting: Literal[0, 1, 2, 3] = csv.QUOTE_MINIMAL,
         safe: bool = False,
         drop_empty_columns: bool = False,
         sort_columns: bool = False,

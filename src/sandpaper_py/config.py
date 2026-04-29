@@ -1,20 +1,14 @@
 from __future__ import annotations
 
-import sys
+import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
+import tomli_w
 from platformdirs import user_config_dir
 
 from .exceptions import ConfigError
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
-
-import tomli_w
 
 
 def default_config_dir() -> Path:
@@ -27,28 +21,28 @@ def default_config_path() -> Path:
 
 @dataclass
 class ScrapeConfig:
-    url: Optional[str] = None
-    pages: Optional[str] = None
-    page_template: Optional[str] = None
+    url: str | None = None
+    pages: str | None = None
+    page_template: str | None = None
     url_list: list[str] = field(default_factory=list)
-    output: Optional[str] = None
+    output: str | None = None
     format: str = "csv"
     encoding: str = "utf-8"
     threshold: int = 10
     extractor: str = "heuristic"
     selectors: dict[str, str] = field(default_factory=dict)
-    row_selector: Optional[str] = None
+    row_selector: str | None = None
     headers: dict[str, str] = field(default_factory=dict)
     cookies: list[dict] = field(default_factory=list)
-    user_agent: Optional[str] = None
-    storage_state: Optional[str] = None
-    proxy: Optional[str] = None
+    user_agent: str | None = None
+    storage_state: str | None = None
+    proxy: str | None = None
     proxies: list[str] = field(default_factory=list)
     headless: bool = True
     scroll: bool = True
     scroll_pause: float = 1.0
     max_scrolls: int = 30
-    wait_for_selector: Optional[str] = None
+    wait_for_selector: str | None = None
     extra_wait_ms: int = 0
     timeout_ms: int = 60000
     retries: int = 2
@@ -60,7 +54,7 @@ class ScrapeConfig:
     max_auto_pages: int = 100
     deduplicate: bool = False
     write_provenance: bool = False
-    preset: Optional[str] = None
+    preset: str | None = None
     log_level: str = "INFO"
     min_text_length: int = 1
     max_text_length: int = 4000
@@ -86,7 +80,7 @@ class ScrapeConfig:
     json_normalize_keys: bool = False
     typed: bool = False
     quality_report: bool = False
-    cache_dir: Optional[str] = None
+    cache_dir: str | None = None
     cache_ttl_seconds: int = 0
     rotate_user_agents: bool = False
     random_delay_ms: int = 0
@@ -96,12 +90,12 @@ class ScrapeConfig:
     dismiss_overlays: bool = True
     prefer_records: bool = True
     max_fields_per_record: int = 30
-    follow_field: Optional[str] = None
+    follow_field: str | None = None
     follow_selectors: dict[str, str] = field(default_factory=dict)
-    follow_row_selector: Optional[str] = None
+    follow_row_selector: str | None = None
     follow_concurrency: int = 4
     follow_skip_on_error: bool = True
-    follow_url_prefix: Optional[str] = None
+    follow_url_prefix: str | None = None
     rename_columns: dict[str, str] = field(default_factory=dict)
     drop_columns: list[str] = field(default_factory=list)
     keep_columns: list[str] = field(default_factory=list)
@@ -127,7 +121,7 @@ def _default_value(key: str) -> Any:
     return getattr(ScrapeConfig(), key, None)
 
 
-def load_config(path: Optional[Path] = None) -> ScrapeConfig:
+def load_config(path: Path | None = None) -> ScrapeConfig:
     if path is None:
         path = default_config_path()
     if not path.exists():
@@ -140,7 +134,7 @@ def load_config(path: Optional[Path] = None) -> ScrapeConfig:
     return _from_dict(data)
 
 
-def save_config(config: ScrapeConfig, path: Optional[Path] = None) -> Path:
+def save_config(config: ScrapeConfig, path: Path | None = None) -> Path:
     if path is None:
         path = default_config_path()
     path.parent.mkdir(parents=True, exist_ok=True)

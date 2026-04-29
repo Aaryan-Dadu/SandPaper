@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import tempfile
 from pathlib import Path
-from typing import Optional, Protocol
+from typing import Protocol
 
 import pandas as pd
 
@@ -74,5 +74,5 @@ def resolve_path(output_path: str | Path, default_extension: str) -> Path:
     return p
 
 
-def maybe_extension(name: str) -> Optional[str]:
+def maybe_extension(name: str) -> str | None:
     return f".{name}" if name and not name.startswith(".") else name or None

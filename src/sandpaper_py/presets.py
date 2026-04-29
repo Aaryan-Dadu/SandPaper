@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-import sys
+import tomllib
 from pathlib import Path
-from typing import Optional
+
+import tomli_w
 
 from .config import ScrapeConfig, default_config_dir
 from .exceptions import ConfigError
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
-
-import tomli_w
 
 
 def presets_dir() -> Path:
@@ -55,7 +49,7 @@ def delete_preset(name: str) -> bool:
     return False
 
 
-def find_preset_for_url(url: str) -> Optional[str]:
+def find_preset_for_url(url: str) -> str | None:
     from urllib.parse import urlparse
 
     host = urlparse(url).netloc.lower()

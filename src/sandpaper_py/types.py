@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -9,7 +9,7 @@ class LoadResult:
     url: str
     html: str
     status: int = 200
-    final_url: Optional[str] = None
+    final_url: str | None = None
     elapsed: float = 0.0
     attempts: int = 1
 
@@ -17,7 +17,7 @@ class LoadResult:
 @dataclass
 class ExtractedTable:
     columns: dict[str, list[str]]
-    source_url: Optional[str] = None
+    source_url: str | None = None
 
     def row_count(self) -> int:
         if not self.columns:
@@ -41,12 +41,12 @@ class ExtractedTable:
 @dataclass
 class Provenance:
     source_urls: list[str] = field(default_factory=list)
-    started_at: Optional[str] = None
-    finished_at: Optional[str] = None
-    extractor: Optional[str] = None
-    loader: Optional[str] = None
+    started_at: str | None = None
+    finished_at: str | None = None
+    extractor: str | None = None
+    loader: str | None = None
     selectors: dict[str, str] = field(default_factory=dict)
-    sandpaper_version: Optional[str] = None
+    sandpaper_version: str | None = None
     options: dict[str, Any] = field(default_factory=dict)
 
 
@@ -54,7 +54,7 @@ class Provenance:
 class ScrapeResult:
     table: ExtractedTable
     provenance: Provenance
-    output_path: Optional[str] = None
+    output_path: str | None = None
 
     @property
     def rows(self) -> int:

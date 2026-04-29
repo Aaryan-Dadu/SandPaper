@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from .config import ScrapeConfig
 from .core import scrape
@@ -14,8 +14,8 @@ log = logging.getLogger("sandpaper.watch")
 def watch(
     cfg: ScrapeConfig,
     interval_seconds: int,
-    iterations: Optional[int] = None,
-    on_run: Optional[Callable[[ScrapeResult], None]] = None,
+    iterations: int | None = None,
+    on_run: Callable[[ScrapeResult], None] | None = None,
 ) -> None:
     if interval_seconds <= 0:
         raise ValueError("interval_seconds must be positive")

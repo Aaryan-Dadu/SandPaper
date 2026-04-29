@@ -5,7 +5,6 @@ import logging
 import sys
 from dataclasses import asdict
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -33,7 +32,7 @@ def _profile_path(name: str) -> Path:
     return _profiles_dir() / f"{name}.json"
 
 
-def _resolve_storage_state(explicit: Optional[str], profile_name: Optional[str]) -> Optional[str]:
+def _resolve_storage_state(explicit: str | None, profile_name: str | None) -> str | None:
     if explicit:
         return explicit
     if profile_name:
@@ -67,7 +66,7 @@ def _available_formats() -> list[str]:
     return seen
 
 
-def _load_proxies(csv: Optional[str], path: Optional[str]) -> list[str]:
+def _load_proxies(csv: str | None, path: str | None) -> list[str]:
     if path:
         text = Path(path).read_text(encoding="utf-8")
         return [
@@ -231,7 +230,7 @@ def _print_summary(result, dry_run: bool = False) -> None:
 
 
 def _make_progress_callback(progress: Progress, task_id):
-    def cb(index: int, total: int, url: str, status: Optional[str]):
+    def cb(index: int, total: int, url: str, status: str | None):
         progress.update(task_id, total=total, completed=index, description=f"[cyan]{url}")
         if status and status != "ok":
             log.warning("%s %s", url, status)
@@ -251,7 +250,7 @@ def _make_progress_callback(progress: Progress, task_id):
     "--config", "config_path", type=click.Path(path_type=Path), help="Path to config TOML."
 )
 @click.pass_context
-def main(ctx: click.Context, log_level: str, config_path: Optional[Path]) -> None:
+def main(ctx: click.Context, log_level: str, config_path: Path | None) -> None:
     setup_logging(log_level.upper())
     ctx.ensure_object(dict)
     ctx.obj["config"] = load_config(config_path) if config_path else load_config()
@@ -533,7 +532,7 @@ def interactive(ctx: click.Context) -> None:
 @click.option("--every", type=int, required=True, help="Seconds between runs.")
 @click.option("--iterations", type=int, default=None, help="Stop after N runs (default: forever).")
 @click.pass_context
-def watch_cmd(ctx: click.Context, every: int, iterations: Optional[int], **kwargs) -> None:
+def watch_cmd(ctx: click.Context, every: int, iterations: int | None, **kwargs) -> None:
     """Run a scrape on a fixed interval."""
     from .watch import watch
 
@@ -580,8 +579,8 @@ def schedule_cmd(ctx: click.Context, cron: str, **kwargs) -> None:
 )
 def pick_cmd(
     url: str,
-    save_path: Optional[Path],
-    preset_name: Optional[str],
+    save_path: Path | None,
+    preset_name: str | None,
     timeout: int,
 ) -> None:
     """Pattern-aware visual element picker.
@@ -665,7 +664,7 @@ def serve_cmd(host: str, port: int) -> None:
     show_default=True,
     help="Seconds before the recorder auto-closes.",
 )
-def record_cmd(url: str, output_path: Path, name: Optional[str], timeout: int) -> None:
+def record_cmd(url: str, output_path: Path, name: str | None, timeout: int) -> None:
     """Record a browser session as a replayable recipe.
 
     Opens a real Chromium window. Click, type, and navigate normally; SandPaper
@@ -716,17 +715,17 @@ def record_cmd(url: str, output_path: Path, name: Optional[str], timeout: int) -
 def run_recipe_cmd(
     recipe_path: Path,
     params: tuple[str, ...],
-    output: Optional[str],
-    format: Optional[str],
+    output: str | None,
+    format: str | None,
     encoding: str,
     headful: bool,
     rate: float,
     concurrency: int,
     provenance: bool,
     quality_report: bool,
-    profile_name: Optional[str],
-    storage_state: Optional[str],
-    cache_dir: Optional[str],
+    profile_name: str | None,
+    storage_state: str | None,
+    cache_dir: str | None,
     rotate_user_agents: bool,
     obey_robots: bool,
 ) -> None:

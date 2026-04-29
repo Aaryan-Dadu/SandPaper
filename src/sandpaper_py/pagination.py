@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
-from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup, Tag
@@ -16,7 +15,7 @@ def expand_template(template: str, pages: Iterable[int]) -> list[str]:
     return [template.replace("{page}", str(p)) for p in pages]
 
 
-def detect_next_link(html: str, base_url: str) -> Optional[str]:
+def detect_next_link(html: str, base_url: str) -> str | None:
     if not html:
         return None
     soup = BeautifulSoup(html, "lxml")

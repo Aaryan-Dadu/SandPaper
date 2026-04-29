@@ -5,7 +5,6 @@ import logging
 import re
 import time
 from pathlib import Path
-from typing import Optional
 from urllib.parse import urlparse
 
 from .exceptions import ConfigError
@@ -135,7 +134,7 @@ def merge_columns(target: dict[str, list[str]], incoming: dict[str, list[str]]) 
             target[key] = list(values)
 
 
-def package_version() -> Optional[str]:
+def package_version() -> str | None:
     try:
         from importlib.metadata import version
 
@@ -165,19 +164,19 @@ def slugify_key(key: str) -> str:
 
 
 class HTMLCache:
-    def __init__(self, root: Optional[str], ttl_seconds: int = 0):
+    def __init__(self, root: str | None, ttl_seconds: int = 0):
         self.root = Path(root).expanduser() if root else None
         self.ttl_seconds = ttl_seconds
         if self.root:
             self.root.mkdir(parents=True, exist_ok=True)
 
-    def _path(self, url: str) -> Optional[Path]:
+    def _path(self, url: str) -> Path | None:
         if self.root is None:
             return None
         digest = hashlib.sha1(url.encode("utf-8")).hexdigest()
         return self.root / f"{digest}.html"
 
-    def get(self, url: str) -> Optional[str]:
+    def get(self, url: str) -> str | None:
         path = self._path(url)
         if path is None or not path.exists():
             return None
