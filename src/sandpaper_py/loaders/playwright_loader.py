@@ -111,8 +111,8 @@ class PlaywrightLoader:
                 if self.options.block_resources:
                     blocked = frozenset(self.options.block_resources)
 
-                    def _blocker(route, request):
-                        if request.resource_type in blocked:
+                    def _blocker(route, request, _blocked=blocked):
+                        if request.resource_type in _blocked:
                             route.abort()
                         else:
                             route.continue_()
